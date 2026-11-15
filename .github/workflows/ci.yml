@@ -12,7 +12,7 @@ jobs:
 
       - name: Fichiers présents
         run: |
-          for f in index.html style.css app.js README.md; do
+          for f in index.html style.css app.js README.md vendor/pdf.js vendor/pdf.worker.js .github/workflows/ci.yml; do
             test -f "$f" || { echo "Fichier manquant: $f"; exit 1; }
           done
 

@@ -9,7 +9,7 @@
 <body>
   <main class="carte">
     <h1>🔊 Lecture vocale instantanée</h1>
-    <p class="sous-titre">Écrivez ou collez du texte (Ctrl&nbsp;+&nbsp;V)&nbsp;: la lecture démarre toute seule.</p>
+    <p class="sous-titre">Écrivez ou collez du texte (Ctrl&nbsp;+&nbsp;V)&nbsp;: la lecture démarre toute seule. Vous pouvez aussi ouvrir ou glisser-déposer un fichier PDF.</p>
 
     <label class="auto">
       <input type="checkbox" id="auto" checked>
@@ -22,6 +22,9 @@
       <button id="btn-lire" class="primaire">▶ Lire</button>
       <button id="btn-pause">⏸ Pause</button>
       <button id="btn-stop">⏹ Arrêter</button>
+      <label class="bouton-fichier" for="fichier-pdf">📄 Ouvrir un PDF
+        <input type="file" id="fichier-pdf" accept="application/pdf" multiple hidden>
+      </label>
     </div>
 
     <details class="reglages">
@@ -40,6 +43,7 @@
 
     <p id="statut" class="statut">Prêt.</p>
   </main>
+  <script src="vendor/pdf.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
