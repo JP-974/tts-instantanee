@@ -9,7 +9,8 @@ const auto = document.getElementById('auto');
 const statut = document.getElementById('statut');
 const vitesseVal = document.getElementById('vitesse-val');
 const hauteurVal = document.getElementById('hauteur-val');
-const inputPdf = document.getElementById('fichier-pdf');
+const inputFichier = document.getElementById('fichier');
+const btnEffacer = document.getElementById('btn-effacer');
 
 let debounceTimer = null;
 
@@ -27,20 +28,31 @@ if (!('speechSynthesis' in window)) {
   speechSynthesis.onvoiceschanged = remplirVoix;
 }
 
+const NOMS_FLUIDS = ['amélie', 'thomas', 'audrey', 'hortense', 'léa', 'alice', 'manon', 'chantal', 'emma', 'daniel', 'bruno', 'léonore'];
+
+function scoreVoix(v) {
+  const n = (v.name + ' ' + (v.lang || '')).toLowerCase();
+  if (/neural|premium|natural|polyglot|enhanced|\bhd\b/.test(n)) return 3;
+  if (NOMS_FLUIDS.some(m => n.includes(m))) return 2;
+  return 1;
+}
+
 function remplirVoix() {
   const voix = speechSynthesis.getVoices();
   if (!voix.length) return;
   selectVoix.innerHTML = '';
   const fr = voix.filter(v => v.lang && v.lang.toLowerCase().startsWith('fr'));
   const autres = voix.filter(v => !(v.lang && v.lang.toLowerCase().startsWith('fr')));
+  fr.sort((a, b) => scoreVoix(b) - scoreVoix(a) || (b.default ? 1 : 0) - (a.default ? 1 : 0));
   const ordonnees = [...fr, ...autres];
   for (const v of ordonnees) {
     const opt = document.createElement('option');
     opt.value = v.name;
-    opt.textContent = `${v.name} (${v.lang})${v.default ? ' — par défaut' : ''}`;
+    const score = scoreVoix(v);
+    opt.textContent = `${v.name} (${v.lang})${score >= 2 ? ' ✨' : ''}${v.default ? ' — par défaut' : ''}`;
     selectVoix.appendChild(opt);
   }
-  const preferee = ordonnees.find(v => v.default) || fr[0] || voix[0];
+  const preferee = fr[0] || ordonnees.find(v => v.default) || voix[0];
   selectVoix.value = preferee.name;
 }
 
@@ -108,6 +120,15 @@ btnStop.addEventListener('click', () => {
   btnPause.textContent = '⏸ Pause';
 });
 
+btnEffacer.addEventListener('click', () => {
+  clearTimeout(debounceTimer);
+  speechSynthesis.cancel();
+  textArea.value = '';
+  statut.textContent = 'Texte effacé.';
+  btnPause.textContent = '⏸ Pause';
+  textArea.focus();
+});
+
 vitesse.addEventListener('input', () => {
   vitesseVal.textContent = parseFloat(vitesse.value).toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 });
@@ -128,37 +149,51 @@ async function extraireTextePdf(fichier) {
   return morceaux.join('\n\n');
 }
 
-async function chargerPdfs(fichiers) {
-  const pdfs = Array.from(fichiers).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
-  if (!pdfs.length) {
-    statut.textContent = 'Aucun fichier PDF sélectionné.';
+const EXT_TEXTE = ['.txt', '.md', '.markdown', '.csv', '.tsv', '.json', '.xml', '.yml', '.yaml', '.html', '.htm', '.log', '.ini', '.svg'];
+
+function estPdf(f) {
+  return f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+}
+
+function estTexte(f) {
+  return (f.type && f.type.startsWith('text/')) || EXT_TEXTE.some(e => f.name.toLowerCase().endsWith(e));
+}
+
+async function chargerFichiers(fichiers) {
+  const pris = Array.from(fichiers).filter(f => estPdf(f) || estTexte(f));
+  if (!pris.length) {
+    statut.textContent = 'Format non pris en charge (PDF ou fichier texte).';
     return;
   }
-  if (!window.pdfjsLib) {
-    statut.textContent = 'La librairie PDF n’a pas pu être chargée.';
-    return;
-  }
-  statut.textContent = 'Extraction du texte…';
+  statut.textContent = 'Lecture du fichier…';
   try {
     const textes = [];
-    for (const f of pdfs) {
-      textes.push(await extraireTextePdf(f));
+    for (const f of pris) {
+      if (estPdf(f)) {
+        if (!window.pdfjsLib) {
+          statut.textContent = 'La librairie PDF n’a pas pu être chargée.';
+          return;
+        }
+        textes.push(await extraireTextePdf(f));
+      } else {
+        textes.push(await f.text());
+      }
     }
     textArea.value = textes.join('\n\n');
-    statut.textContent = `Texte extrait de ${pdfs.length} PDF.`;
+    statut.textContent = `Texte chargé depuis ${pris.length} fichier(s).`;
     lancerSiAuto();
   } catch (e) {
-    statut.textContent = 'Lecture du PDF impossible : ' + (e && e.message ? e.message : e);
+    statut.textContent = 'Lecture du fichier impossible : ' + (e && e.message ? e.message : e);
   }
 }
 
-inputPdf.addEventListener('change', () => {
-  chargerPdfs(inputPdf.files);
-  inputPdf.value = '';
+inputFichier.addEventListener('change', () => {
+  chargerFichiers(inputFichier.files);
+  inputFichier.value = '';
 });
 
 textArea.addEventListener('dragover', e => e.preventDefault());
 textArea.addEventListener('drop', e => {
   e.preventDefault();
-  chargerPdfs(e.dataTransfer.files);
+  chargerFichiers(e.dataTransfer.files);
 });
