@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecture vocale instantanée</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="carte">
+    <h1><img class="logo" src="favicon.png" alt=""> Lecture vocale instantanée</h1>
+    <p class="sous-titre">Écrivez, collez (Ctrl&nbsp;+&nbsp;V) ou ouvrez un fichier (PDF, txt, md, csv…)&nbsp;: la lecture démarre toute seule.</p>
+
+    <label class="auto">
+      <input type="checkbox" id="auto" checked>
+      Lecture automatique à la saisie
+    </label>
+
+    <textarea id="texte" rows="10" placeholder="Écrivez ou collez votre texte ici…"></textarea>
+
+    <div class="boutons">
+      <button id="btn-lire" class="primaire">▶ Lire</button>
+      <button id="btn-pause">⏸ Pause</button>
+      <button id="btn-stop">⏹ Arrêter</button>
+      <button id="btn-effacer">🗑 Effacer</button>
+      <label class="bouton-fichier" for="fichier">📄 Ouvrir un fichier
+        <input type="file" id="fichier" accept=".pdf,application/pdf,.txt,.md,.markdown,.csv,.tsv,.json,.xml,.yml,.yaml,.html,.htm,.log,.ini,.svg" multiple hidden>
+      </label>
+    </div>
+
+    <details class="reglages">
+      <summary>Réglages</summary>
+      <div class="grille">
+        <label for="voix">Voix</label>
+        <select id="voix"></select>
+
+        <label for="vitesse">Vitesse <span id="vitesse-val">1,0</span></label>
+        <input type="range" id="vitesse" min="0.5" max="2" step="0.1" value="1">
+
+        <label for="hauteur">Hauteur <span id="hauteur-val">1,0</span></label>
+        <input type="range" id="hauteur" min="0.5" max="2" step="0.1" value="1">
+      </div>
+      <p class="indice">Astuce : les voix marquées ✨ (neural / premium) sont généralement plus naturelles.</p>
+    </details>
+
+    <p id="statut" class="statut">Prêt.</p>
+  </main>
+  <script src="vendor/pdf.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
