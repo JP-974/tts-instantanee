@@ -14,5 +14,6 @@ voix marquées ✨ (neural / premium) sont les plus naturelles.
 
 - `index.html` — structure de la page
 - `style.css` — mise en forme
+- `favicon.png` — icône de l'onglet et logo de l'en-tête
 - `app.js` — lecture automatique, extraction PDF/fichiers texte, contrôles (lire / pause / arrêter / effacer, voix, vitesse, hauteur)
 - `vendor/` — PDF.js 3.11.174 (build legacy, © Mozilla Foundation, licence Apache 2.0, voir `vendor/LICENSE.pdfjs`)
